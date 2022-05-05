@@ -1,5 +1,6 @@
 modLoader="javafml"
 loaderVersion="${loader_version}"
+issueTrackerURL="https://github.com/wendall911/SlurpReborn/issues"
 license="MIT"
 
 [[mods]]
@@ -11,7 +12,7 @@ license="MIT"
   updateJSONURL="https://raw.githubusercontent.com/wendall911/SlurpReborn/1.18.x/files/updates.json"
   authors="wendall911"
   credits="ashar42"
-  logoFile="assets/slurpreborn/textures/gui/logo.png"
+  logoFile="logo.png"
 
 [[dependencies.slurpreborn]]
     modId="forge"
