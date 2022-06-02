@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.material.Fluids;
@@ -29,13 +30,34 @@ public class PlayerEventHandler {
     @SubscribeEvent
     public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
         final Player player = event.getPlayer() instanceof Player ? (Player) event.getPlayer() : null;
+
+        if (player != null && player.level.isClientSide) {
+            drinkWater(player, event);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        final Player player = event.getPlayer() instanceof Player ? (Player) event.getPlayer() : null;
+
+        if (player != null && player.level.isClientSide) {
+            drinkWater(player, event);
+        }
+    }
+
+    private static void drinkWater(Player player, PlayerInteractEvent event) {
+        final InteractionHand hand = event.getHand();
+
+        if (hand != InteractionHand.OFF_HAND
+                || player.getPose() != Pose.CROUCHING
+                || !player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) return;
+
         final LevelAccessor level = event.getWorld();
+        final HitResult hitresult = player.pick(2.0D, 0.0F, true);
+        BlockPos pos = ((BlockHitResult)hitresult).getBlockPos();
 
-        final HitResult hitresult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
-
-        if (player.getPose() == Pose.CROUCHING && hitresult.getType() == HitResult.Type.BLOCK &&
-                level.getFluidState(new BlockPos(hitresult.getLocation())).getType() == Fluids.WATER) {
-
+        if (hitresult.getType() == HitResult.Type.BLOCK
+                && level.getFluidState(pos).getType() == Fluids.WATER) {
             if (ThirstHelper.isThirstEnabled() && ThirstHelper.canDrink(player, false)) {
                 level.playSound(player, new BlockPos(player.getPosition(0f)), SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.4f, 1.0f);
 
