@@ -3,16 +3,13 @@ package slurpreborn.event;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -29,7 +26,7 @@ public class PlayerEventHandler {
 
     @SubscribeEvent
     public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
-        final Player player = event.getPlayer() instanceof Player ? (Player) event.getPlayer() : null;
+        final Player player = event.getEntity();
 
         if (player != null && player.level.isClientSide) {
             drinkWater(player, event);
@@ -38,7 +35,7 @@ public class PlayerEventHandler {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        final Player player = event.getPlayer() instanceof Player ? (Player) event.getPlayer() : null;
+        final Player player = event.getEntity();
 
         if (player != null && player.level.isClientSide) {
             drinkWater(player, event);
@@ -52,7 +49,7 @@ public class PlayerEventHandler {
                 || player.getPose() != Pose.CROUCHING
                 || !player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) return;
 
-        final LevelAccessor level = event.getWorld();
+        final LevelAccessor level = event.getLevel();
         final HitResult hitresult = player.pick(2.0D, 0.0F, true);
         BlockPos pos = ((BlockHitResult)hitresult).getBlockPos();
 
@@ -64,22 +61,6 @@ public class PlayerEventHandler {
                 NetworkManager.INSTANCE.sendToServer(new DrinkWater());
             }
         }
-    }
-
-    private static BlockHitResult getPlayerPOVHitResult(LevelAccessor pLevel, Player pPlayer, ClipContext.Fluid pFluidMode) {
-        final float xRot = pPlayer.getXRot();
-        final float yRot = pPlayer.getYRot();
-        final Vec3 eyePos = pPlayer.getEyePosition();
-        final float cosRotY = Mth.cos(-yRot * ((float)Math.PI / 180F) - (float)Math.PI);
-        final float sinRotY = Mth.sin(-yRot * ((float)Math.PI / 180F) - (float)Math.PI);
-        final float cosRotX = -Mth.cos(-xRot * ((float)Math.PI / 180F));
-        final float sinRotX = Mth.sin(-xRot * ((float)Math.PI / 180F));
-        final float pX = sinRotY * cosRotX;
-        final float pZ = cosRotY * cosRotX;
-        final double reach = pPlayer.getAttribute(net.minecraftforge.common.ForgeMod.REACH_DISTANCE.get()).getValue();
-        final Vec3 reachPos = eyePos.add((double)pX * reach, (double)sinRotX * reach, (double)pZ * reach);
-
-        return pLevel.clip(new ClipContext(eyePos, reachPos, ClipContext.Block.OUTLINE, pFluidMode, pPlayer));
     }
 
 }

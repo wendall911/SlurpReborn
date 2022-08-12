@@ -12,6 +12,12 @@ buildscript {
             name = 'parchment'
             url = 'https://maven.parchmentmc.org'
         }
+        maven {
+            url "https://repo.spongepowered.org/repository/maven-public/"
+            content {
+                includeGroup "org.spongepowered"
+            }
+        }
         mavenCentral()
     }
     dependencies {
@@ -19,6 +25,7 @@ buildscript {
         classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
         classpath 'se.bjurr.gitchangelog:git-changelog-gradle-plugin:1.71.8'
         classpath group: 'org.parchmentmc', name: 'librarian', version: '1.+'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 
@@ -27,6 +34,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'se.bjurr.gitchangelog.git-changelog-gradle-plugin'
 apply plugin: 'com.matthewprenger.cursegradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
+apply plugin: 'org.spongepowered.mixin'
 
 repositories {
     maven {
@@ -46,7 +54,7 @@ def modid = "${modid}"
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '17'
 
 minecraft {
-    mappings channel: "${mappings_channel}", version: mappings_version
+    mappings channel: "${mappings_channel}", version: "${mappings_version}-${minecraft_version}"
 
     runs {
         client {
@@ -102,11 +110,25 @@ def replaceResources = tasks.register("replaceResources", Copy) {
     it.into "$buildDir/resources/main/"
 }
 
+def updates = tasks.register("generateUpdates", Copy) {
+    it.outputs.upToDateWhen {
+        false
+    }
+
+    it.from("./files/templates/") {
+        include 'updates.json'
+        expand 'mod_version': mod_version
+    }
+
+    it.into 'files/'
+}
+
 processResources {
     duplicatesStrategy(DuplicatesStrategy.FAIL)
     exclude('META-INF/mods.toml')
     configure {
         finalizedBy(replaceResources)
+        finalizedBy(updates)
     }
 }
 
@@ -138,6 +160,7 @@ curseforge {
             id = project.srcurseId
             changelog = file('build/libs/' + project.getName() + '-' + version + '-changelog.txt')
             releaseType = cf_release_type
+            addGameVersion('Forge')
             "${cf_versions}".split(',').each {
                 addGameVersion "${it}"
             }
@@ -193,7 +216,7 @@ task signJar(type: SignJar, dependsOn: jar) {
     alias = project.keyStoreAlias
     storePass = project.keyStorePass
     keyPass = project.keyStoreKeyPass
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
+    inputFile = jar.archiveFile
+    outputFile = jar.archiveFile
 }
 

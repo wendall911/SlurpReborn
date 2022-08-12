@@ -7,7 +7,7 @@ A Minecraft 1.18.1+ Tough As Nails extension mod that allows drinking from a wat
 
 Download latest:
 
-1.18.1/1.18.2 - [![Download](https://curse.nikky.moe/api/img/620378?version=1.18.2&logo)](https://curse.nikky.moe/api/url/620378?version=1.18.2)
+1.19-1.19.2 - [![Download](https://curse.nikky.moe/api/img/620378?version=1.19.2&logo)](https://curse.nikky.moe/api/url/620378?version=1.19.2)
 
 All Downloads:
 

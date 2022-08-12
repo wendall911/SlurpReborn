@@ -32,7 +32,7 @@ public class DrinkWater {
 
         if (SlurpReborn.RANDOM.nextFloat() < ConfigHandler.Common.effectChance()) {
             player.addEffect(new MobEffectInstance(
-                    TANEffects.THIRST,
+                    TANEffects.THIRST.get(),
                     ConfigHandler.Common.effectDuration(),
                     ConfigHandler.Common.effectPotency(),
                     false, false, false));
